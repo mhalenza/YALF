@@ -78,20 +78,22 @@ Finally, the `msg` contains the post-formatting message string.
 
 ### Filtering
 `Sink` derives from `Filter` which performs filtering on log entries.
+
 Filtering is configured via the three member functions:
 ```cpp
-virtual void setDefaultLogLevel(LogLevel level);
-virtual void setDomainLogLevel(std::string_view domain, LogLevel level);
-virtual void clearDomainLogLevel(std::string_view domain);
+void setDefaultLogLevel(LogLevel level);
+void setDomainLogLevel(std::string_view domain, LogLevel level);
+void clearDomainLogLevel(std::string_view domain);
 ```
 
-`setDefaultLogLevel()` sets the minimum log level that an entry must achieve in order for the Sink to be interested in it.
+- `setDefaultLogLevel()` sets the minimum log level that an entry must achieve in order for the Sink to be interested in it.
 eg. if the default log level is set to `Warn` then only `Fatal`, `Critical`, `Error`, and `Warning` level messages will be considered by that sink, all other levels will be ignored.
 
-`setDomainLogLevel()` set a per-domain log level (and the default log level is ignored).
-`clearDomainLogLevel()` removes the per-domain log level (returning that domain to the default log level).
+- `setDomainLogLevel()` set a per-domain log level (and the default log level is ignored).
 
-`checkFilter()` is used by `Logger` to determine if the Sink is interested in a given log entry.
+- `clearDomainLogLevel()` removes the per-domain log level (returning that domain to the default log level).
+
+- `checkFilter()` is used by `Logger` to determine if the Sink is interested in a given log entry.
 
 All of this functionality is defined `virtual` so `Sink` subclasses may override and completely change that behavior if they wish.
 
@@ -100,6 +102,12 @@ All of this functionality is defined `virtual` so `Sink` subclasses may override
 It is used by the YALF-provided sinks `ConsoleSink` and `FileSink` to format the final log string that is written to the console or log file.
 
 To configure `FormattedStringSink` subclasses, use these methods:
+```cpp
+    void setFormat(std::string_view fmt);
+    void setFormat(LogLevel level, std::string_view fmt);
+    void clearFormat(LogLevel level);
+```
+
 - `setFormat(std::string_view fmt)` sets the default format for all log levels.
 See [Format String Reference](#format-string-reference) for the special identifiers used by the `fmt`.  
 If a default format is never set, then `"%H:%M:%S %F:%l %D[%I] %L:  %x%R%n"` is used.
@@ -154,7 +162,6 @@ auto logger = std::make_unique<YALF::Logger>();
 }
 YALF::setGlobalLogger(std::move(logger));
 ```
-
 
 ## Format String Reference
 Timestamps use the local timezone for convenience.
