@@ -60,14 +60,18 @@ std::string_view getLogLevelString(LogLevel level)
     return "<invalid>"sv;
 }
 
+using LogEntryTimestampResolution = std::micro;
+using LogEntryTimestampClock = std::chrono::system_clock;
+using LogEntryTimestampDuration = std::chrono::duration<LogEntryTimestampClock::rep, LogEntryTimestampResolution>;
+using LogEntryTimestamp = std::chrono::time_point<LogEntryTimestampClock, LogEntryTimestampDuration>;
 struct EntryMetadata
 {
     LogLevel level;
     std::string_view domain;
     std::optional<std::string_view> instance;
     std::source_location source_location;
+    LogEntryTimestamp timestamp;
 };
-using LogEntryTimestamp = std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds>;
 
 template <typename ObjectType>
 concept HasGetName = requires(ObjectType const* obj)
@@ -119,7 +123,7 @@ class Sink : public Filter
 {
 public:
     Sink() = default;
-    virtual void log(EntryMetadata const& meta, LogEntryTimestamp const& timestamp, std::string_view msg) = 0;
+    virtual void log(EntryMetadata const& meta, std::string_view msg) = 0;
 };
 
 inline
@@ -162,14 +166,14 @@ protected:
             return it->second;
         return this->default_fmt;
     }
-    std::string formatEntry(EntryMetadata const& meta, LogEntryTimestamp const& timestamp, std::string_view msg)
+    std::string formatEntry(EntryMetadata const& meta, std::string_view msg)
     {
         std::string_view fmt = this->getFormatString(meta.level);
         std::string out;
         out.reserve(fmt.size());
         auto out_it = std::back_inserter(out);
 
-        auto const zoned_time = std::chrono::zoned_time{ std::chrono::current_zone(), timestamp };
+        auto const zoned_time = std::chrono::zoned_time{ std::chrono::current_zone(), meta.timestamp };
         auto const local_timestamp = zoned_time.get_local_time();
 
         size_t s = 0;
@@ -289,9 +293,9 @@ public:
         : FormattedStringSink()
         , m()
     {}
-    virtual void log(EntryMetadata const& meta, LogEntryTimestamp const& timestamp, std::string_view msg) override
+    virtual void log(EntryMetadata const& meta, std::string_view msg) override
     {
-        std::string const str = this->formatEntry(meta, timestamp, msg);
+        std::string const str = this->formatEntry(meta, msg);
         std::lock_guard g{ this->m };
         std::cout.write(str.c_str(), str.length());
     }
@@ -314,9 +318,9 @@ public:
     {
         this->of.exceptions(std::ios_base::failbit | std::ios_base::badbit);
     }
-    virtual void log(EntryMetadata const& meta, LogEntryTimestamp const& timestamp, std::string_view msg) override
+    virtual void log(EntryMetadata const& meta, std::string_view msg) override
     {
-        std::string const str = this->formatEntry(meta, timestamp, msg);
+        std::string const str = this->formatEntry(meta, msg);
         std::lock_guard g{ this->m };
         this->of.write(str.c_str(), str.length());
     }
@@ -347,9 +351,21 @@ public:
             return *it->second;
         throw std::runtime_error(std::format("Failed to find sink {0}", name));
     }
-
-    void log(EntryMetadata const& meta, std::string_view fmt, std::format_args args) const
+    void removeSink(std::string name)
     {
+        this->sinks.erase(name);
+    }
+
+private:
+    void dolog(LogLevel level, std::string_view domain, std::optional<std::string_view> instance, std::source_location src_location, std::string_view fmt, std::format_args args) const
+    {
+        EntryMetadata const meta = {
+            .level = level,
+            .domain = domain,
+            .instance = instance,
+            .source_location = src_location,
+            .timestamp = std::chrono::time_point_cast<LogEntryTimestampDuration>(std::chrono::system_clock::now()),
+        };
         bool const passed = [&] {
             for (auto&& sink : this->sinks | std::views::values) {
                 if (sink->checkFilter(meta))
@@ -359,42 +375,29 @@ public:
         }();
         if (passed) {
             std::string const msg = std::vformat(fmt, args);
-            auto const now = std::chrono::system_clock::now();
-            auto const timestamp = std::chrono::time_point_cast<std::chrono::milliseconds>(now);
             for (auto&& sink : this->sinks | std::views::values) {
                 if (sink->checkFilter(meta))
-                    sink->log(meta, timestamp, msg);
+                    sink->log(meta, msg);
             }
         }
     }
 
+public:
     template <class... Args>
-    void log(LogLevel level, std::string_view domain, std::source_location src_location, std::format_string<Args...> fmt, Args... args) const
+    void log(LogLevel level, std::string_view domain, std::source_location src_location, std::format_string<Args...> fmt, Args&&... args) const
     {
-        EntryMetadata const meta = {
-            .level = level,
-            .domain = domain,
-            .instance = std::nullopt,
-            .source_location = std::move(src_location),
-        };
-        this->log(meta, fmt.get(), std::make_format_args(args...));
+        this->dolog(level, domain, std::nullopt, src_location, fmt.get(), std::make_format_args(args...));
     }
 
     template <class... Args>
-    void log(LogLevel level, std::string_view domain, std::string_view instance, std::source_location src_location, std::format_string<Args...> fmt, Args... args) const
+    void log(LogLevel level, std::string_view domain, std::string_view instance, std::source_location src_location, std::format_string<Args...> fmt, Args&&... args) const
     {
-        EntryMetadata const meta = {
-            .level = level,
-            .domain = domain,
-            .instance = instance,
-            .source_location = std::move(src_location),
-        };
-        this->log(meta, fmt.get(), std::make_format_args(args...));
+        this->dolog(level, domain, instance, src_location, fmt.get(), std::make_format_args(args...));
     }
 
     template <class ObjectType, class... Args>
         requires std::is_class_v<ObjectType>
-    void log(LogLevel level, ObjectType const* obj, std::source_location src_location, std::format_string<Args...> fmt, Args... args) const
+    void log(LogLevel level, ObjectType const* obj, std::source_location src_location, std::format_string<Args...> fmt, Args&&... args) const
     {
         auto const domain = [&] {
             if constexpr (HasInstanceGetDomain<ObjectType>) {
@@ -415,13 +418,7 @@ public:
                 return std::format("{}", (void*)obj);
             }
         }();
-        EntryMetadata const meta = {
-            .level = level,
-            .domain = domain,
-            .instance = instance,
-            .source_location = std::move(src_location),
-        };
-        this->log(meta, fmt.get(), std::make_format_args(args...));
+        this->dolog(level, domain, instance, src_location, fmt.get(), std::make_format_args(args...));
     }
 private:
     std::unordered_map<std::string, std::unique_ptr<Sink>> sinks;
