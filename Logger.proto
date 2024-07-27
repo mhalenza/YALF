@@ -1,0 +1,27 @@
+syntax = "proto3";
+option optimize_for = SPEED;
+import "google/protobuf/timestamp.proto";
+
+package YALF.DTO;
+
+enum LogLevel {
+    Fatal       = 0; // Errors that need to halt the program immediately
+    Critical    = 1; // Errors that MUST be corrected, but do not terminate the program
+    Error       = 2; // Errors
+    Warning     = 3; // Warnings
+    Info        = 4; // Informational
+    Debug       = 5; // Debug Messages
+    Noise       = 6; // Debugging Messages that are usually ignored
+}
+
+message LogEntry {
+    LogLevel                    level       = 1;
+    string                      domain      = 2;
+    string                      instance    = 3;
+    string                      filename    = 4;
+    uint32                      line        = 5;
+    uint32                      column      = 6;
+    string                      function    = 7;
+    google.protobuf.Timestamp   timestamp   = 8;
+    string                      message     = 9;
+}
