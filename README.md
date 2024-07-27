@@ -84,6 +84,9 @@ struct EntryMetadata
 The timestamp granularity is std::micro (microseconds) and uses std::chrono::system_clock by default.
 These can be changed by defining `YALF_TIMESTAMP_RESOLUTION` and/or `YALF_TIMESTAMP_CLOCK` before the header is included.
 
+By default, the timestamp will be in whatever timezone the `YALF_TIMESAMP_CLOCK` (default: `std::chrono::system_clock`) is in, which is likely UTC (Unix Time).
+To configure YALF to use localtime, define `YALF_USE_LOCALTIME` before including the header.
+
 ### Filtering
 `Sink` derives from `Filter` which performs filtering on log entries.
 

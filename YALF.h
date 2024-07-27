@@ -179,8 +179,11 @@ protected:
         out.reserve(fmt.size());
         auto out_it = std::back_inserter(out);
 
-        auto const zoned_time = std::chrono::zoned_time{ std::chrono::current_zone(), meta.timestamp };
-        auto const local_timestamp = zoned_time.get_local_time();
+        #ifdef YALF_USE_LOCALTIME
+        auto const local_timestamp = std::chrono::zoned_time{ std::chrono::current_zone(), meta.timestamp }.get_local_time();
+        #else
+        auto const local_timestamp = meta.timestamp;
+        #endif
 
         size_t s = 0;
         while (s < fmt.size()) {
