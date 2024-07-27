@@ -62,19 +62,27 @@ virtual void log(EntryMetadata const& meta, LogEntryTimestamp const& timestamp, 
 
 `EntryMetadata` is a struct containing metadata about the message:
 ```cpp
+#ifndef YALF_TIMESTAMP_RESOLUTION
+#define YALF_TIMESTAMP_RESOLUTION std::micro
+#endif
+#ifndef YALF_TIMESTAMP_CLOCK
+#define YALF_TIMESTAMP_CLOCK std::chrono::system_clock
+#endif
+using LogEntryTimestampResolution = YALF_TIMESTAMP_RESOLUTION;
+using LogEntryTimestampClock = YALF_TIMESTAMP_CLOCK;
+using LogEntryTimestampDuration = std::chrono::duration<LogEntryTimestampClock::rep, LogEntryTimestampResolution>;
+using LogEntryTimestamp = std::chrono::time_point<LogEntryTimestampClock, LogEntryTimestampDuration>;
 struct EntryMetadata
 {
     LogLevel level;
     std::string_view domain;
     std::optional<std::string_view> instance;
     std::source_location source_location;
+    LogEntryTimestamp timestamp;
 };
 ```
-The timestamp is a `std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds>`.
-It is separate from the Metadata as the metadata is constructed in multiple locations, but the timestamp is constructed at a single, central, location.
-The timestamp construction and formatting of the log message are not performed if no sinks would do anything with the result, saving a small bit of performance.
-
-Finally, the `msg` contains the post-formatting message string.
+The timestamp granularity is std::micro (microseconds) and uses std::chrono::system_clock by default.
+These can be changed by defining `YALF_TIMESTAMP_RESOLUTION` and/or `YALF_TIMESTAMP_CLOCK` before the header is included.
 
 ### Filtering
 `Sink` derives from `Filter` which performs filtering on log entries.
@@ -117,7 +125,7 @@ This is mainly used by `ConsoleSink` to provide colored output for different log
 
 - `clearFormat(LogLevel level)` clears the per-log-level format and returns that log level to the default.
 
-Custom subclasses should use `std::string formatEntry(EntryMetadata const& meta, LogEntryTimestamp const& timestamp, std::string_view msg)` to turn a log entry into a singular string.
+Custom subclasses should use `std::string formatEntry(EntryMetadata const& meta, std::string_view msg)` to turn a log entry into a singular string.
 
 ### ConsoleSink
 `ConsoleSink` requires very little configuration (other than what is provided by the base `Filter` and `FormattedStringSink` base classes).

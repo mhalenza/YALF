@@ -60,8 +60,14 @@ std::string_view getLogLevelString(LogLevel level)
     return "<invalid>"sv;
 }
 
-using LogEntryTimestampResolution = std::micro;
-using LogEntryTimestampClock = std::chrono::system_clock;
+#ifndef YALF_TIMESTAMP_RESOLUTION
+#define YALF_TIMESTAMP_RESOLUTION std::micro
+#endif
+#ifndef YALF_TIMESTAMP_CLOCK
+#define YALF_TIMESTAMP_CLOCK std::chrono::system_clock
+#endif
+using LogEntryTimestampResolution = YALF_TIMESTAMP_RESOLUTION;
+using LogEntryTimestampClock = YALF_TIMESTAMP_CLOCK;
 using LogEntryTimestampDuration = std::chrono::duration<LogEntryTimestampClock::rep, LogEntryTimestampResolution>;
 using LogEntryTimestamp = std::chrono::time_point<LogEntryTimestampClock, LogEntryTimestampDuration>;
 struct EntryMetadata
