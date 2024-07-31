@@ -240,7 +240,7 @@ protected:
                                 case 'x': out += "\033[30m"; break; // %Cx = Black
                                 case 'r': out += "\033[31m"; break; // %Cr = Red
                                 case 'g': out += "\033[32m"; break; // %Cg = Green
-                                case 'y': out += "\033[33m"; break; // %Cy = Yellow 
+                                case 'y': out += "\033[33m"; break; // %Cy = Yellow
                                 case 'b': out += "\033[34m"; break; // %Cb = Blue
                                 case 'm': out += "\033[35m"; break; // %Cm = Magenta
                                 case 'c': out += "\033[36m"; break; // %Cc = Cyan

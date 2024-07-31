@@ -44,8 +44,8 @@ There are a number of ways for domain/instance to be added to the entry:
 
 For the last example, YALF will use a number of methods to determine the domain and instance strings:
 - If the class does nothing special, YALF will use `typeinfo` to get a string for the domain and will use the address of the object for the instance.
-- If the class provides a `getName()` (possibly const) member function that returns a `std::string_view`, then YALF will call that to get the instance string.  
-- If the class provides a `getDomain()` (possiby static or const) member function that returns a `std::string_view`, then YALF will call that to get the domain string.  
+- If the class provides a `getName()` (possibly const) member function that returns a `std::string_view`, then YALF will call that to get the instance string.
+- If the class provides a `getDomain()` (possiby static or const) member function that returns a `std::string_view`, then YALF will call that to get the domain string.
   `getDomain()` may be static, non-static, or even virtual.
 
 For both `getName()` and `getDomain()` the return value does not need to be exactly `std::string_view` it only needs to be `convertible_to` one.
@@ -120,7 +120,7 @@ To configure `FormattedStringSink` subclasses, use these methods:
 ```
 
 - `setFormat(std::string_view fmt)` sets the default format for all log levels.
-See [Format String Reference](#format-string-reference) for the special identifiers used by the `fmt`.  
+See [Format String Reference](#format-string-reference) for the special identifiers used by the `fmt`.
 If a default format is never set, then `"%H:%M:%S %F:%l %D[%I] %L:  %x%R%n"` is used.
 
 - `setFormat(LogLevel level, std::string_view fmt)` sets a per-log-level format that overrides the default.
