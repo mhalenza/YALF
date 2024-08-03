@@ -60,6 +60,22 @@ std::string_view getLogLevelString(LogLevel level)
     return "<invalid>"sv;
 }
 
+inline
+std::span<LogLevel const> getLogLevelList()
+{
+    static std::array levels = {
+        LogLevel::Fatal,
+        LogLevel::Critical,
+        LogLevel::Notice,
+        LogLevel::Error,
+        LogLevel::Warning,
+        LogLevel::Info,
+        LogLevel::Debug,
+        LogLevel::Noise,
+    };
+    return levels;
+}
+
 #ifndef YALF_TIMESTAMP_RESOLUTION
 #define YALF_TIMESTAMP_RESOLUTION std::micro
 #endif
