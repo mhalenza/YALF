@@ -22,13 +22,13 @@ This is to give storage for the global logger object, which is used by the vario
 
 ## Logging Messages
 To log a message, use one of the `LOG_*` macros:
-- `LOG_FATAL()`
-- `LOG_CRIT()`
-- `LOG_ERROR()`
-- `LOG_WARN()`
-- `LOG_INFO()`
-- `LOG_DEBUG()`
-- `LOG_NOISE()`
+- `LOG_FATAL()` Errors that need to halt the program immediately
+- `LOG_CRIT()` Errors that MUST be corrected, but do not terminate the program
+- `LOG_ERROR()` Errors
+- `LOG_WARN()` Warnings
+- `LOG_INFO()` Informational
+- `LOG_DEBUG()` Debug
+- `LOG_NOISE()` Debugging Messages that are usually ignored
 
 The LOG macros use a ``std::format()`` style API (influenced by `printf()`) - you provide a "format" string as well as arguments that get substituted into the format string.
 For example: `LOG_INFO("Domain", "This is the log message.  42=0x{:x}", 42);` will log a message with the string `"This is the log message.  42=0x2a"`
