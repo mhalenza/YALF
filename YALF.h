@@ -24,6 +24,7 @@ enum class LogLevel
 {
     Fatal, // Errors that need to halt the program immediately
     Critical, // Errors that MUST be corrected, but do not terminate the program
+    Notice, // Normal, but significant conditions
     Error, // Errors
     Warning, // Warnings
     Info, // Informational
@@ -36,6 +37,7 @@ std::optional<LogLevel> parseLogLevelString(std::string_view str)
 {
     if (str == "Fatal") return LogLevel::Fatal;
     if (str == "Critical") return LogLevel::Critical;
+    if (str == "Notice") return LogLevel::Notice;
     if (str == "Error") return LogLevel::Error;
     if (str == "Warning") return LogLevel::Warning;
     if (str == "Info") return LogLevel::Info;
@@ -51,6 +53,7 @@ std::string_view getLogLevelString(LogLevel level)
     switch (level) {
         case LogLevel::Fatal: return "Fatal"sv;
         case LogLevel::Critical: return "Critical"sv;
+        case LogLevel::Notice: return "Notice"sv;
         case LogLevel::Error: return "Error"sv;
         case LogLevel::Warning: return "Warning"sv;
         case LogLevel::Info: return "Info"sv;
@@ -480,6 +483,8 @@ Logger& getGlobalLogger()
 #define LOG_FATAL_I(domain, instance, ...)  ::YALF::getGlobalLogger().log(::YALF::LogLevel::Fatal,    domain, instance, std::source_location::current(), __VA_ARGS__)
 #define LOG_CRIT(domain_or_obj, ...)        ::YALF::getGlobalLogger().log(::YALF::LogLevel::Critical, domain_or_obj,    std::source_location::current(), __VA_ARGS__)
 #define LOG_CRIT_I(domain, instance, ...)   ::YALF::getGlobalLogger().log(::YALF::LogLevel::Critical, domain, instance, std::source_location::current(), __VA_ARGS__)
+#define LOG_NOTICE(domain_or_obj, ...)      ::YALF::getGlobalLogger().log(::YALF::LogLevel::Notice,   domain_or_obj,    std::source_location::current(), __VA_ARGS__)
+#define LOG_NOTICE_I(domain, instance, ...) ::YALF::getGlobalLogger().log(::YALF::LogLevel::Notice,   domain, instance, std::source_location::current(), __VA_ARGS__)
 #define LOG_ERROR(domain_or_obj, ...)       ::YALF::getGlobalLogger().log(::YALF::LogLevel::Error,    domain_or_obj,    std::source_location::current(), __VA_ARGS__)
 #define LOG_ERROR_I(domain, instance, ...)  ::YALF::getGlobalLogger().log(::YALF::LogLevel::Error,    domain, instance, std::source_location::current(), __VA_ARGS__)
 #define LOG_WARN(domain_or_obj, ...)        ::YALF::getGlobalLogger().log(::YALF::LogLevel::Warning,  domain_or_obj,    std::source_location::current(), __VA_ARGS__)

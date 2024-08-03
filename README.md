@@ -24,6 +24,7 @@ This is to give storage for the global logger object, which is used by the vario
 To log a message, use one of the `LOG_*` macros:
 - `LOG_FATAL()` Errors that need to halt the program immediately
 - `LOG_CRIT()` Errors that MUST be corrected, but do not terminate the program
+- `LOG_NOTICE()` Normal, but significant conditions
 - `LOG_ERROR()` Errors
 - `LOG_WARN()` Warnings
 - `LOG_INFO()` Informational

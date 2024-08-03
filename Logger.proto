@@ -7,11 +7,12 @@ package YALF.DTO;
 enum LogLevel {
     Fatal       = 0; // Errors that need to halt the program immediately
     Critical    = 1; // Errors that MUST be corrected, but do not terminate the program
-    Error       = 2; // Errors
-    Warning     = 3; // Warnings
-    Info        = 4; // Informational
-    Debug       = 5; // Debug Messages
-    Noise       = 6; // Debugging Messages that are usually ignored
+    Notice      = 2; // Normal, but significant conditions
+    Error       = 3; // Errors
+    Warning     = 4; // Warnings
+    Info        = 5; // Informational
+    Debug       = 6; // Debug Messages
+    Noise       = 7; // Debugging Messages that are usually ignored
 }
 
 message LogEntry {
