@@ -143,6 +143,15 @@ It can be instantiated with `YALF::makeFileSink(std::filesystem::path filename)`
 The file will be created if it doesn't exist and opened for append if it does exist.
 The file is opened once when the FileSink is created, eg. log rotation is not supported.
 
+### PbFileSink
+Requires the header `YALF_PbFileSink.h` to be included.
+Requires `Logger.proto` to be used with protoc to generate `Logger.pb.cc` and `Logger.pb.h`.
+Typical way to do this is with `protoc --cpp_out=. ./Logger.proto`.
+
+`PbFileSink` requires very little configuration (other than what is provided by the base `Filter` and `FormattedStringSink` base classes).
+
+It can be instantiated with `YALF::makePbFileSink(std::filesystem::path filename)`.
+
 ### Other Possible Sinks
 Here's a list of other sinks that the author envisions but are not yet implemented:
 
