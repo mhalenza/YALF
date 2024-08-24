@@ -152,6 +152,15 @@ Typical way to do this is with `protoc --cpp_out=. ./Logger.proto`.
 
 It can be instantiated with `YALF::makePbFileSink(std::filesystem::path filename)`.
 
+### DeferredSink
+Requires the header `YALF_DeferredSink.h` to be included.
+
+This is a "wrapper" Sink in that it consumes and wraps another Sink.
+Internally, it puts log messages into a queue and uses a background thread to process the log entries.
+This can reduce the latency of the main threads that use logging.
+However, at the moment it is a pretty simple implementation using `std::queue`.
+A better implementation might use a lock-free queue and recycling the datastructures that store the log entry in the queue.
+
 ### Other Possible Sinks
 Here's a list of other sinks that the author envisions but are not yet implemented:
 
