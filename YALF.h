@@ -1,6 +1,7 @@
 // Copyright (c) 2024 Matt M Halenza
 // SPDX-License-Identifier: MIT
 #pragma once
+#include <array>
 #include <chrono>
 #include <filesystem>
 #include <fstream>
@@ -66,7 +67,7 @@ std::string_view getLogLevelString(LogLevel level)
 inline
 std::span<LogLevel const> getLogLevelList()
 {
-    static std::array levels = {
+    static std::array<LogLevel, 8> levels = {
         LogLevel::Fatal,
         LogLevel::Critical,
         LogLevel::Notice,
