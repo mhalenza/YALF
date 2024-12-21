@@ -360,6 +360,7 @@ private:
 inline
 std::unique_ptr<FormattedStringSink> makeFileSink(std::filesystem::path filename)
 {
+    std::filesystem::create_directories(filename.parent_path());
     return std::make_unique<FileSink>(filename);
 }
 
